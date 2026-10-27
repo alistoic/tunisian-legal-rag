@@ -1,0 +1,28 @@
+---
+code: Code des obligations et des contrats
+source_url: https://www.iort.gov.tn/
+date_publication: 1906-12-15
+date_derniere_maj: 2022-06-10
+statut: en vigueur
+langue: fr
+---
+
+CHAPITRE I — DES CONDITIONS ESSENTIELLES DU CONTRAT
+
+Article 2 — Quatre conditions sont essentielles pour la validité d'un contrat :
+le consentement de la partie qui s'oblige, sa capacité de contracter, un objet
+certain qui forme la matière de l'engagement, et une cause licite.
+
+Article 3 — Le consentement n'est pas valable s'il a été donné par erreur, extorqué
+par violence ou surpris par dol.
+
+Article 4 — L'erreur n'est une cause de nullité du contrat que lorsqu'elle porte
+sur la substance même de la chose qui en est l'objet.
+
+CHAPITRE II — DES EFFETS DU CONTRAT
+
+Article 5 — Les conventions légalement formées tiennent lieu de loi à ceux qui les
+ont faites. Elles doivent être exécutées de bonne foi.
+
+Article 6 — Le contrat est nul lorsque l'objet ou la cause est illicite ou contraire
+à l'ordre public et aux bonnes mœurs.

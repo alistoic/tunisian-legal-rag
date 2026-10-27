@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistant Juridique Tunisien — RAG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16283D; --ink-soft:#2A4059; --parchment:#F3EEDF;
+    --parchment-deep:#E9E1CB; --panel:#FBF8F0; --seal:#A23B2E;
+    --seal-soft:#F1E0DA; --olive:#5F6B4A; --olive-soft:#E4E6D9;
+    --charcoal:#2A2620; --line:#D8CDB0; --line-soft:#E6DEC7;
+    --mono:'IBM Plex Mono', monospace; --serif:'IBM Plex Serif', serif;
+    --sans:'IBM Plex Sans', sans-serif; --arabic:'IBM Plex Sans Arabic', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--parchment);color:var(--charcoal);
+    font-family:var(--sans);display:flex;flex-direction:column;}
+
+  header.letterhead{border-bottom:2px solid var(--ink);padding:18px 28px 14px;
+    background:var(--panel);display:flex;align-items:flex-end;
+    justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .mark{display:flex;align-items:center;gap:14px;}
+  .mark svg{flex:none;}
+  .titles h1{font-family:var(--serif);font-size:22px;font-weight:600;
+    color:var(--ink);margin:0;letter-spacing:0.2px;}
+  .titles .ar{font-family:var(--arabic);font-size:16px;color:var(--ink-soft);
+    margin:2px 0 0;direction:rtl;}
+  .status-chip{font-family:var(--mono);font-size:11px;color:var(--seal);
+    border:1px solid var(--seal);background:var(--seal-soft);padding:4px 9px;
+    border-radius:3px;white-space:nowrap;}
+
+  .disclaimer{background:var(--olive-soft);color:var(--olive);font-size:12.5px;
+    padding:9px 28px;border-bottom:1px solid var(--line-soft);line-height:1.5;}
+  .disclaimer strong{color:var(--ink);}
+
+  .layout{flex:1;display:flex;min-height:0;}
+
+  aside.corpus{width:280px;flex:none;border-right:1px solid var(--line);
+    background:var(--parchment-deep);padding:20px 18px;overflow-y:auto;}
+  aside.corpus h2{font-family:var(--mono);font-size:11px;text-transform:uppercase;
+    letter-spacing:0.08em;color:var(--ink-soft);margin:0 0 4px;}
+  aside.corpus .sub{font-size:12px;color:#7A7462;margin:0 0 16px;line-height:1.5;}
+  .code-item{display:flex;align-items:flex-start;gap:9px;padding:10px 0;
+    border-top:1px solid var(--line-soft);cursor:pointer;user-select:none;}
+  .code-item:first-of-type{border-top:none;}
+  .code-item input{margin-top:3px;accent-color:var(--ink);}
+  .code-item .name{font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.35;}
+  .code-item .tag{display:block;font-family:var(--mono);font-size:10.5px;
+    color:var(--olive);margin-top:2px;}
+  .corpus-footer{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft);
+    font-size:11.5px;color:#8A8368;line-height:1.5;}
+
+  main.chat{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .messages{flex:1;overflow-y:auto;padding:24px 28px;display:flex;
+    flex-direction:column;gap:18px;}
+  .empty-state{margin:auto;max-width:460px;text-align:center;color:#8A8368;}
+  .empty-state .glyph{font-family:var(--serif);font-size:34px;color:var(--ink);
+    margin-bottom:10px;}
+  .empty-state p{font-size:13.5px;line-height:1.6;}
+  .suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;}
+  .suggestion{font-size:12px;padding:7px 12px;border:1px solid var(--line);
+    border-radius:16px;background:var(--panel);cursor:pointer;color:var(--ink-soft);}
+  .suggestion:hover{border-color:var(--ink);}
+
+  .msg{max-width:76%;display:flex;flex-direction:column;gap:6px;}
+  .msg.user{align-self:flex-end;align-items:flex-end;}
+  .msg.bot{align-self:flex-start;align-items:flex-start;}
+  .bubble{padding:12px 15px;border-radius:4px;font-size:14.5px;line-height:1.65;
+    white-space:pre-wrap;}
+  .msg.user .bubble{background:var(--ink);color:var(--parchment);
+    border-radius:10px 10px 2px 10px;}
+  .msg.bot .bubble{background:var(--panel);border:1px solid var(--line);
+    border-radius:10px 10px 10px 2px;color:var(--charcoal);}
+  .msg[dir="rtl"] .bubble{font-family:var(--arabic);text-align:right;}
+
+  .citations{display:flex;flex-wrap:wrap;gap:6px;}
+  .citation-chip{display:inline-flex;align-items:center;gap:5px;
+    font-family:var(--mono);font-size:10.5px;color:var(--seal);
+    background:var(--seal-soft);border:1px solid #DEB9AE;padding:3px 8px;
+    border-radius:3px;text-decoration:none;}
+  .citation-chip::before{content:"§";}
+
+  .sources{font-size:11.5px;color:#8A8368;font-family:var(--mono);}
+  .sources summary{cursor:pointer;color:var(--ink-soft);}
+  .sources ul{margin:6px 0 0;padding-left:16px;line-height:1.7;}
+  .sources li{margin-bottom:4px;}
+
+  .confidence-note{font-size:11.5px;color:#8A8368;max-width:100%;font-style:italic;}
+  .warn-note{font-size:11.5px;color:var(--seal);font-style:italic;}
+
+  .thinking{align-self:flex-start;display:flex;gap:5px;padding:12px 15px;
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:10px 10px 10px 2px;}
+  .thinking span{width:6px;height:6px;border-radius:50%;background:var(--ink-soft);
+    animation:pulse 1.1s infinite ease-in-out;}
+  .thinking span:nth-child(2){animation-delay:0.15s;}
+  .thinking span:nth-child(3){animation-delay:0.3s;}
+  @keyframes pulse{0%,80%,100%{opacity:.25;transform:scale(.85);}
+    40%{opacity:1;transform:scale(1);}}
+
+  .error-banner{align-self:center;font-size:12.5px;color:var(--seal);
+    background:var(--seal-soft);border:1px solid #DEB9AE;padding:8px 14px;
+    border-radius:4px;}
+
+  .composer{border-top:1px solid var(--line);background:var(--panel);
+    padding:14px 24px 18px;}
+  .composer-row{display:flex;align-items:flex-end;gap:10px;}
+  .lang-toggle{display:flex;border:1px solid var(--line);border-radius:6px;
+    overflow:hidden;flex:none;}
+  .lang-toggle button{border:none;background:var(--panel);padding:10px 12px;
+    font-family:var(--mono);font-size:11px;color:#8A8368;cursor:pointer;}
+  .lang-toggle button.active{background:var(--ink);color:var(--parchment);}
+  textarea#input{flex:1;resize:none;border:1px solid var(--line);border-radius:8px;
+    padding:11px 13px;font-family:var(--sans);font-size:14px;line-height:1.5;
+    max-height:140px;background:#fff;color:var(--charcoal);}
+  textarea#input.ar{font-family:var(--arabic);direction:rtl;text-align:right;}
+  textarea#input:focus{outline:2px solid var(--ink-soft);outline-offset:1px;}
+  button#send{flex:none;background:var(--ink);color:var(--parchment);border:none;
+    border-radius:8px;padding:11px 18px;font-size:13.5px;font-weight:500;cursor:pointer;}
+  button#send:disabled{opacity:.45;cursor:default;}
+  button#send:hover:not(:disabled){background:var(--ink-soft);}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;}
+
+  @media (max-width:760px){aside.corpus{display:none;} .msg{max-width:90%;}}
+  @media (prefers-reduced-motion: reduce){.thinking span{animation:none;}}
+</style>
+</head>
+<body>
+
+<header class="letterhead">
+  <div class="mark">
+    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1" y="1" width="32" height="32" rx="2" stroke="#16283D" stroke-width="1.4"/>
+      <path d="M17 7L17 27M9 12L25 12M9 22L25 22" stroke="#16283D" stroke-width="1.2"/>
+      <circle cx="17" cy="17" r="3.2" fill="#A23B2E"/>
+    </svg>
+    <div class="titles">
+      <h1>Assistant Juridique Tunisien</h1>
+      <p class="ar">المساعد القانوني التونسي</p>
+    </div>
+  </div>
+  <span class="status-chip" id="statusChip">RAG — CHROMADB</span>
+</header>
+
+<div class="disclaimer">
+  <strong>Avertissement :</strong> ce prototype s'appuie sur un corpus de démonstration non exhaustif indexé dans ChromaDB. Les réponses ne constituent pas un conseil juridique — vérifiez toujours les textes officiels au JORT ou consultez un avocat.
+</div>
+
+<div class="layout">
+  <aside class="corpus">
+    <h2>Corpus de référence</h2>
+    <p class="sub">Collections ChromaDB interrogées. Décochez pour restreindre la recherche.</p>
+    <div id="corpusList"></div>
+    <div class="corpus-footer" id="corpusFooter">Chargement…</div>
+  </aside>
+
+  <main class="chat">
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        <div class="glyph">ح</div>
+        <p>Posez une question en français, en arabe ou en Derja. L'assistant recherche les articles pertinents dans le corpus indexé et cite ses sources.</p>
+        <div class="suggestions">
+          <span class="suggestion" data-q="Combien de jours de congé annuel un salarié a-t-il en Tunisie ?">Congés annuels du salarié</span>
+          <span class="suggestion" data-q="ما هي شروط صحة العقد في القانون التونسي؟">شروط صحة العقد</span>
+          <span class="suggestion" data-q="Quelle est la durée légale du travail par semaine ?">Durée légale du travail</span>
+          <span class="suggestion" data-q="chnowa el chourout lel mariage fi tounes ?">Derja — mariage</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-row">
+        <div class="lang-toggle">
+          <button id="btnFr" class="active" type="button">FR</button>
+          <button id="btnAr" type="button">AR</button>
+        </div>
+        <textarea id="input" rows="1" placeholder="Écrivez votre question juridique…"></textarea>
+        <button id="send" type="button">Envoyer</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const API = '';
+  const messagesEl = document.getElementById('messages');
+  const emptyState = document.getElementById('emptyState');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  const btnFr = document.getElementById('btnFr');
+  const btnAr = document.getElementById('btnAr');
+  const statusChip = document.getElementById('statusChip');
+  const corpusList = document.getElementById('corpusList');
+  const corpusFooter = document.getElementById('corpusFooter');
+
+  let lang = 'fr';
+  let history = [];
+  let busy = false;
+
+  // ---------- Corpus ----------
+  async function loadCorpus(){
+    try{
+      const r = await fetch(`${API}/api/corpus`);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const data = await r.json();
+      corpusList.innerHTML = '';
+      if(!data.collections.length){
+        corpusList.innerHTML = '<p class="sub">Aucune collection indexée. Lancez <code>make ingest</code>.</p>';
+        corpusFooter.textContent = 'Base vide.';
+        return;
+      }
+      data.collections.forEach(c => {
+        const label = document.createElement('label');
+        label.className = 'code-item';
+        label.innerHTML = `
+          <input type="checkbox" checked data-collection="${c.name}">
+          <span>
+            <span class="name">${c.name.replace(/_/g,' ')}</span>
+            <span class="tag">${c.count} chunks</span>
+          </span>`;
+        corpusList.appendChild(label);
+      });
+      corpusFooter.textContent = `${data.collections.length} collections · ${data.total_chunks} chunks indexés.`;
+    }catch(e){
+      corpusList.innerHTML = '<p class="sub">Impossible de charger le corpus.</p>';
+      corpusFooter.textContent = 'API indisponible.';
+    }
+  }
+  loadCorpus();
+
+  function selectedCollections(){
+    return Array.from(document.querySelectorAll('#corpusList input:checked'))
+      .map(i => i.getAttribute('data-collection'));
+  }
+
+  // ---------- UI ----------
+  function autoresize(){
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+  }
+  input.addEventListener('input', autoresize);
+
+  function setLang(l){
+    lang = l;
+    btnFr.classList.toggle('active', l === 'fr');
+    btnAr.classList.toggle('active', l === 'ar');
+    input.classList.toggle('ar', l === 'ar');
+    input.placeholder = l === 'ar' ? 'اكتب سؤالك القانوني هنا…' : 'Écrivez votre question juridique…';
+  }
+  btnFr.addEventListener('click', () => setLang('fr'));
+  btnAr.addEventListener('click', () => setLang('ar'));
+
+  const isArabic = t => /[\u0600-\u06FF]/.test(t || '');
+
+  function addUserBubble(text){
+    if(emptyState) emptyState.remove();
+    const wrap = document.createElement('div');
+    wrap.className = 'msg user';
+    if(isArabic(text)) wrap.setAttribute('dir','rtl');
+    const b = document.createElement('div');
+    b.className = 'bubble'; b.textContent = text;
+    wrap.appendChild(b);
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function addThinking(){
+    const w = document.createElement('div');
+    w.className = 'thinking'; w.id = 'thinkingIndicator';
+    w.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(w);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  function removeThinking(){
+    const t = document.getElementById('thinkingIndicator');
+    if(t) t.remove();
+  }
+
+  function addBotBubble(data){
+    const wrap = document.createElement('div');
+    wrap.className = 'msg bot';
+    if(isArabic(data.answer)) wrap.setAttribute('dir','rtl');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = data.answer || 'Réponse indisponible.';
+    wrap.appendChild(bubble);
+
+    if(data.reformulated_query){
+      const rf = document.createElement('div');
+      rf.className = 'confidence-note';
+      rf.textContent = '↻ Derja reformulé en : ' + data.reformulated_query;
+      wrap.appendChild(rf);
+    }
+
+    if(Array.isArray(data.citations) && data.citations.length){
+      const cw = document.createElement('div');
+      cw.className = 'citations';
+      data.citations.forEach(c => {
+        const chip = document.createElement('a');
+        chip.className = 'citation-chip';
+        chip.textContent = [c.source, c.article].filter(Boolean).join(' — ');
+        if(c.url){ chip.href = c.url; chip.target = '_blank'; chip.rel='noopener'; }
+        cw.appendChild(chip);
+      });
+      wrap.appendChild(cw);
+    }
+
+    if(Array.isArray(data.sources) && data.sources.length){
+      const det = document.createElement('details');
+      det.className = 'sources';
+      const items = data.sources.map(s =>
+        `<li><strong>${s.code}</strong> — ${s.article} <em>(dist. ${s.distance}, ${s.statut})</em></li>`
+      ).join('');
+      det.innerHTML = `<summary>${data.sources.length} articles récupérés</summary><ul>${items}</ul>`;
+      wrap.appendChild(det);
+    }
+
+    if(data.out_of_corpus){
+      const w = document.createElement('div');
+      w.className = 'warn-note';
+      w.textContent = '⚠ Similarité faible — question possiblement hors du corpus indexé.';
+      wrap.appendChild(w);
+    }
+
+    if(data.confidence_note){
+      const n = document.createElement('div');
+      n.className = 'confidence-note';
+      n.textContent = data.confidence_note;
+      wrap.appendChild(n);
+    }
+
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function addError(msg){
+    const w = document.createElement('div');
+    w.className = 'error-banner'; w.textContent = msg;
+    messagesEl.appendChild(w);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // ---------- Envoi ----------
+  async function sendMessage(text){
+    if(!text.trim() || busy) return;
+    busy = true;
+    sendBtn.disabled = true;
+    statusChip.textContent = 'RECHERCHE EN COURS…';
+
+    addUserBubble(text);
+    const previousHistory = history.slice(-6);
+    input.value = ''; autoresize();
+    addThinking();
+
+    try{
+      const r = await fetch(`${API}/api/chat`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message: text,
+          history: previousHistory,
+          collections: selectedCollections() || null
+        })
+      });
+      removeThinking();
+
+      if(!r.ok){
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || ('HTTP ' + r.status));
+      }
+      const data = await r.json();
+      addBotBubble(data);
+
+      history.push({role:'user', content:text});
+      history.push({role:'assistant', content:data.answer});
+    }catch(e){
+      removeThinking();
+      addError('La requête a échoué (' + e.message + '). Réessayez dans un instant.');
+    }finally{
+      busy = false;
+      sendBtn.disabled = false;
+      statusChip.textContent = 'RAG — CHROMADB';
+    }
+  }
+
+  sendBtn.addEventListener('click', () => sendMessage(input.value));
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(input.value); }
+  });
+
+  document.querySelectorAll('.suggestion').forEach(el => {
+    el.addEventListener('click', () => {
+      const q = el.getAttribute('data-q');
+      setLang(isArabic(q) ? 'ar' : 'fr');
+      sendMessage(q);
+    });
+  });
+})();
+</script>
+</body>
+</html>

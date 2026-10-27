@@ -1,0 +1,23 @@
+---
+code: Code du statut personnel
+source_url: https://www.iort.gov.tn/
+date_publication: 1956-08-13
+date_derniere_maj: 2021-11-05
+statut: en vigueur
+langue: fr
+---
+
+LIVRE PREMIER — DU MARIAGE
+
+Article premier — Le mariage est un contrat consensuel par lequel un homme et une
+femme s'unissent pour former une famille. Il requiert le consentement des deux
+époux et la présence de deux témoins. La polygamie est interdite en Tunisie.
+
+Article 3 — Le mariage doit être célébré devant l'officier de l'état civil, en
+présence de deux témoins, et l'acte en est dressé conformément à la loi.
+
+LIVRE DEUXIEME — DE LA SUCCESSION
+
+Article 100 — Les règles de succession combinent des dispositions du droit musulman
+et des aménagements propres au droit tunisien, notamment en ce qui concerne la
+succession du conjoint survivant et les droits des descendants.

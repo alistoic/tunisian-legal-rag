@@ -1,0 +1,17 @@
+---
+code: Loi de finances 2026
+source_url: https://www.iort.gov.tn/
+date_publication: 2025-12-20
+date_derniere_maj: 2025-12-20
+statut: en vigueur
+langue: fr
+---
+
+Article 5 — Les barèmes de l'impôt sur le revenu des personnes physiques et certains
+taux de la taxe sur la valeur ajoutée sont ajustés chaque année par la loi de
+finances. Seul le texte publié au Journal Officiel de la République Tunisienne fait
+foi pour l'année en cours.
+
+Article 12 — Les entreprises soumises à un régime réel d'imposition doivent déposer
+leur déclaration annuelle de résultat au plus tard le 31 mars de l'année suivant
+l'exercice concerné, sauf prorogation accordée par l'administration fiscale.

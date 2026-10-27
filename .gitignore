@@ -1,0 +1,38 @@
+# SECURITY
+.env
+
+# GENERATED DATA
+data/chroma/
+data/cache/
+data/processed/
+*.rapport.log
+*.log
+
+# PYTHON
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+.venv/
+
+# TESTING
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+.spyproject/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
